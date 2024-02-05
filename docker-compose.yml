@@ -1,0 +1,19 @@
+version: '3'
+
+services:
+  autotrain:
+    image: saladtechnologies/autotrain:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./images:/images
+      - ./output:/output
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              capabilities: [ gpu ]
+              count: all
+          

@@ -1,0 +1,3 @@
+autotrain-advanced
+flash-attn
+deepspeed

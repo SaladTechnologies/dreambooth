@@ -6,6 +6,9 @@ autotrain dreambooth \
 --prompt "timber boy" \
 --resolution 1024 \
 --batch-size 1 \
+--checkpointing-steps 50 \
+--resume-from-checkpoint latest \
+--checkpoints-total-limit 1 \
 --num-steps 500 \
 --fp16 \
 --gradient-accumulation 4 \

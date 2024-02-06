@@ -9,6 +9,9 @@ services:
     volumes:
       - ./images:/images
       - ./output:/output
+      - ./models:/models
+    environment:
+      HF_HOME: /models
     deploy:
       resources:
         reservations:

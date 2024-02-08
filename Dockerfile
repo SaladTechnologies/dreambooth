@@ -14,6 +14,7 @@ RUN apt-get update -y && apt-get install -y \
     cmake \
     gcc \
     unzip \
+    zip \
     libpq-dev \
     libsndfile1-dev
 RUN git lfs install
@@ -31,5 +32,5 @@ WORKDIR /app/diffusers/examples/dreambooth
 RUN pip install -r requirements_sdxl.txt
 RUN accelerate config default
 
-COPY train.sh .
-CMD ["./train.sh"]
+COPY train.py .
+CMD ["python", "train.py"]

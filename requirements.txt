@@ -3,3 +3,5 @@ git+https://github.com/huggingface/accelerate.git@v0.26.1
 xformers
 bitsandbytes
 hf_transfer
+boto3
+watchdog

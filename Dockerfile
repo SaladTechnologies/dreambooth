@@ -1,4 +1,4 @@
-FROM pytorch/pytorch:2.2.0-cuda12.1-cudnn8-devel
+FROM pytorch/pytorch:2.2.0-cuda12.1-cudnn8-runtime
 
 ENV DEBIAN_FRONTEND=noninteractive \
     TZ=UTC \
@@ -22,7 +22,14 @@ WORKDIR /app
 
 COPY requirements.txt .
 RUN pip install -r requirements.txt
-RUN autotrain setup
+RUN git clone -b v0.26.1 https://github.com/huggingface/diffusers.git
+
+WORKDIR /app/diffusers
+RUN pip install -e .
+
+WORKDIR /app/diffusers/examples/dreambooth
+RUN pip install -r requirements_sdxl.txt
+RUN accelerate config default
 
 COPY train.sh .
 CMD ["./train.sh"]

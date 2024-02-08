@@ -7,6 +7,12 @@ import time
 import sys
 import threading
 import re
+import logging
+
+log_level = os.getenv("LOG_LEVEL", "INFO").upper()
+log_format = "%(asctime)s - %(levelname)s - %(name)s - %(message)s"
+logging.basicConfig(level=log_level, format=log_format,
+                    datefmt="%m/%d/%Y %H:%M:%S")
 
 model_name = os.getenv(
     "MODEL_NAME", "stabilityai/stable-diffusion-xl-base-1.0")
@@ -38,10 +44,10 @@ def unzip_to_sibling_folder(zip_file):
     # Execute the unzip command
     try:
         subprocess.run(unzip_command, check=True)
-        print(
+        logging.info(
             f"Zip file '{zip_file}' successfully extracted to '{output_folder}'.")
     except subprocess.CalledProcessError as e:
-        print(f"Error: Failed to extract zip file '{zip_file}': {e}")
+        logging.info(f"Error: Failed to extract zip file '{zip_file}': {e}")
 
 
 def load_existing_progress():
@@ -76,10 +82,10 @@ def load_existing_progress():
             # remove the zip file
             os.remove(output_file)
         else:
-            print("No existing progress found.")
+            logging.info("No existing progress found.")
 
     except Exception as e:
-        print(e)
+        logging.error(e)
         exit(1)
 
 
@@ -104,12 +110,12 @@ def train():
         "--checkpoints_total_limit=1"
     ]
 
-    print(f"Training command: {' '.join(command_array)}", flush=True)
+    logging.info(f"Training command: {' '.join(command_array)}")
 
     try:
         subprocess.run(command_array, check=True)
     except subprocess.CalledProcessError as e:
-        print(f"Error: Failed to train model: {e}")
+        logging.error(f"Error: Failed to train model: {e}")
         exit(1)
 
 
@@ -120,13 +126,13 @@ class MyHandler(FileSystemEventHandler):
 
     def on_created(self, event):
         if event.is_directory and event.src_path.startswith(self.checkpoint_dir) and re.search(r"checkpoint-\d+/?$", event.src_path):
-            print(
-                f"New checkpoint directory created: {event.src_path}", flush=True)
+            logging.info(
+                f"New checkpoint directory created: {event.src_path}")
             self.wait_for_write_completion(event.src_path)
             zip_and_upload_checkpoint(event.src_path)
 
     def wait_for_write_completion(self, directory):
-        print(f"Waiting for write operations to stop in {directory}...")
+        logging.info(f"Waiting for write operations to stop in {directory}...")
         while True:
             time.sleep(1)
             try:
@@ -137,10 +143,10 @@ class MyHandler(FileSystemEventHandler):
                             break
                     else:
                         # No ongoing write operations found
-                        print("Write operations stopped.")
+                        logging.info("Write operations stopped.")
                         return
             except Exception as e:
-                print(f"Error: {e}")
+                logging.error(f"Error: {e}")
                 sys.exit(1)
 
 
@@ -153,7 +159,7 @@ def monitor_checkpoint_directories(directory):
     observer = Observer()
     observer.schedule(event_handler, directory, recursive=True)
     observer.start()
-    print(
+    logging.info(
         f"Monitoring directory: {directory} for new 'checkpoint-*' subdirectories...")
     try:
         while keep_alive:
@@ -165,31 +171,31 @@ def monitor_checkpoint_directories(directory):
 
 def zip_and_upload_checkpoint(checkpoint_dir):
     try:
-
-        # Construct the zip file name, using the name of the rightmost directory
         # Get the name of the rightmost directory
         base_dir = os.path.basename(checkpoint_dir)
 
         # Construct the zip file name
         zip_file_name = f"{base_dir}.zip"
 
-        print(
-            f"Zipping and uploading checkpoint directory: {checkpoint_dir} as {zip_file_name}", flush=True)
+        logging.info(
+            f"Zipping and uploading checkpoint directory: {checkpoint_dir} as {zip_file_name}")
 
         # Zip the contents of the rightmost directory
-        zip_command = ['zip', '-r', zip_file_name, '-j', f"{checkpoint_dir}/*"]
-        subprocess.run(zip_command, check=True, shell=True)
+        zip_command = ['zip', '-rj',
+                       f"{output_dir}/{zip_file_name}", f"{checkpoint_dir}"]
+        logging.info(f"Running command: {' '.join(zip_command)}")
+        subprocess.run(zip_command, check=True)
 
         # Upload the zip file to S3
-        s3.upload_file(zip_file_name, bucket_name,
+        s3.upload_file(f"{output_dir}/{zip_file_name}", bucket_name,
                        f"{bucket_prefix}{zip_file_name}")
 
         # Remove the zip file
-        os.remove(zip_file_name)
-        print(
-            f"Checkpoint directory '{checkpoint_dir}' zipped and uploaded.", flush=True)
+        os.remove(f"{output_dir}/{zip_file_name}")
+        logging.info(
+            f"Checkpoint directory '{checkpoint_dir}' zipped and uploaded.")
     except Exception as e:
-        print(f"Error: {e}")
+        logging.error(f"Error: {e}")
         sys.exit(1)
 
 
@@ -200,16 +206,17 @@ def upload_final_lora():
                        bucket_name, f"{bucket_prefix}/pytorch_lora_weights.safetensors")
 
     except Exception as e:
-        print(f"Error: {e}")
+        logging.exception(f"Error: {e}")
+        logging.error()
         sys.exit(1)
 
 
 if __name__ == "__main__":
-    print("Checking for existing progress...", flush=True)
+    logging.info("Checking for existing progress...")
     load_existing_progress()
 
     # Start training in one thread, and monitoring in another
-    print("Starting training and monitoring threads...", flush=True)
+    logging.info("Starting training and monitoring threads...")
     train_thread = threading.Thread(target=train)
     monitor_thread = threading.Thread(
         target=monitor_checkpoint_directories, args=(output_dir,))
@@ -222,5 +229,6 @@ if __name__ == "__main__":
     keep_alive = False
     monitor_thread.join()
 
-    print("Training and monitoring threads finished. Uploading Lora", flush=True)
+    logging.info(
+        "Training and monitoring threads finished. Uploading Lora")
     upload_final_lora()

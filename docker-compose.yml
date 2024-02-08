@@ -18,6 +18,7 @@ services:
       - AWS_ENDPOINT_URL
       - BUCKET_NAME=training-checkpoints
       - BUCKET_PREFIX=loras/timber/
+      - PYTHONUNBUFFERED=1
     deploy:
       resources:
         reservations:

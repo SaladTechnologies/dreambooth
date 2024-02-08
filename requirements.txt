@@ -5,3 +5,4 @@ bitsandbytes
 hf_transfer
 boto3
 watchdog
+requests

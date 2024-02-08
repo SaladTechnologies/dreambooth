@@ -8,6 +8,7 @@ import sys
 import threading
 import re
 import logging
+import requests
 
 log_level = os.getenv("LOG_LEVEL", "INFO").upper()
 log_format = "%(asctime)s - %(levelname)s - %(name)s - %(message)s"
@@ -21,13 +22,57 @@ output_dir = os.getenv("OUTPUT_DIR", "/output/timber")
 vae_path = os.getenv("VAE_PATH", "madebyollin/sdxl-vae-fp16-fix")
 prompt = os.getenv("PROMPT", "timber boy")
 
-bucket_name = os.getenv('BUCKET_NAME', None)
-bucket_prefix = os.getenv('BUCKET_PREFIX', None)
+checkpoint_bucket_name = os.getenv('CHECKPOINT_BUCKET_NAME', None)
+checkpoint_bucket_prefix = os.getenv('CHECKPOINT_BUCKET_PREFIX', None)
+
+data_bucket_name = os.getenv('DATA_BUCKET_NAME', None)
+data_bucket_prefix = os.getenv('DATA_BUCKET_PREFIX', None)
 
 s3 = boto3.client('s3')
 
 os.makedirs(instance_dir, exist_ok=True)
 os.makedirs(output_dir, exist_ok=True)
+
+
+def download_data():
+    if data_bucket_name is None or data_bucket_prefix is None:
+        return
+
+    try:
+        # List objects in the bucket with the specified prefix
+        response = s3.list_objects_v2(
+            Bucket=data_bucket_name, Prefix=data_bucket_prefix)
+
+        # Download the objects to the instance directory
+        for obj in response.get('Contents', []):
+            key = obj['Key']
+            output_file = f"{instance_dir}/{key.split('/')[-1]}"
+            s3.download_file(data_bucket_name, key, output_file)
+            logging.info(f"Downloaded '{key}' to '{output_file}'.")
+
+            if key.endswith('.zip'):
+                # Unzip downloaded file into parent directory
+                unzip_to_parent_folder(output_file)
+                os.remove(output_file)
+    except Exception as e:
+        logging.error(e)
+        exit(1)
+
+
+def unzip_to_parent_folder(zip_file):
+    # Get the name of the zip file without extension
+    zip_file_name = os.path.splitext(zip_file)[0]
+
+    # Construct the unzip command
+    unzip_command = ['unzip', '-o', zip_file, '-d', os.path.dirname(zip_file)]
+
+    # Execute the unzip command
+    try:
+        subprocess.run(unzip_command, check=True)
+        logging.info(
+            f"Zip file '{zip_file}' successfully extracted to '{os.path.dirname(zip_file)}'.")
+    except subprocess.CalledProcessError as e:
+        logging.info(f"Error: Failed to extract zip file '{zip_file}': {e}")
 
 
 def unzip_to_sibling_folder(zip_file):
@@ -51,12 +96,13 @@ def unzip_to_sibling_folder(zip_file):
 
 
 def load_existing_progress():
-    if bucket_name is None or bucket_prefix is None:
+    if checkpoint_bucket_name is None or checkpoint_bucket_prefix is None:
         return
 
     try:
         # List objects in the bucket with the specified prefix
-        response = s3.list_objects_v2(Bucket=bucket_name, Prefix=bucket_prefix)
+        response = s3.list_objects_v2(
+            Bucket=checkpoint_bucket_name, Prefix=checkpoint_bucket_prefix)
 
         # Filter objects to include only those with .zip extension
         zip_files = [obj for obj in response.get(
@@ -74,7 +120,8 @@ def load_existing_progress():
 
             # Download the zip file to output directory, using the same name
             output_file = f"{output_dir}/{most_recent_zip_key.split('/')[-1]}"
-            s3.download_file(bucket_name, most_recent_zip_key, output_file)
+            s3.download_file(checkpoint_bucket_name,
+                             most_recent_zip_key, output_file)
 
             # Unzip the downloaded file
             unzip_to_sibling_folder(output_file)
@@ -164,6 +211,7 @@ def monitor_checkpoint_directories(directory):
     try:
         while keep_alive:
             time.sleep(1)
+        observer.stop()
     except KeyboardInterrupt:
         observer.stop()
     observer.join()
@@ -187,8 +235,8 @@ def zip_and_upload_checkpoint(checkpoint_dir):
         subprocess.run(zip_command, check=True)
 
         # Upload the zip file to S3
-        s3.upload_file(f"{output_dir}/{zip_file_name}", bucket_name,
-                       f"{bucket_prefix}{zip_file_name}")
+        s3.upload_file(f"{output_dir}/{zip_file_name}", checkpoint_bucket_name,
+                       f"{checkpoint_bucket_prefix}{zip_file_name}")
 
         # Remove the zip file
         os.remove(f"{output_dir}/{zip_file_name}")
@@ -203,7 +251,7 @@ def upload_final_lora():
     try:
         # the file is $output_dir/pytorch_lora_weights.safetensors
         s3.upload_file(f"{output_dir}/pytorch_lora_weights.safetensors",
-                       bucket_name, f"{bucket_prefix}/pytorch_lora_weights.safetensors")
+                       checkpoint_bucket_name, f"{checkpoint_bucket_prefix}pytorch_lora_weights.safetensors")
 
     except Exception as e:
         logging.exception(f"Error: {e}")
@@ -214,6 +262,9 @@ def upload_final_lora():
 if __name__ == "__main__":
     logging.info("Checking for existing progress...")
     load_existing_progress()
+
+    logging.info("Downloading training data...")
+    download_data()
 
     # Start training in one thread, and monitoring in another
     logging.info("Starting training and monitoring threads...")
@@ -226,6 +277,7 @@ if __name__ == "__main__":
     monitor_thread.start()
 
     train_thread.join()
+    logging.info("Training thread finished. Stopping monitoring thread...")
     keep_alive = False
     monitor_thread.join()
 

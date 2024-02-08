@@ -2,7 +2,7 @@ version: '3'
 
 services:
   autotrain:
-    image: saladtechnologies/autotrain:latest
+    image: saladtechnologies/dreambooth:base
     build:
       context: .
       dockerfile: Dockerfile
@@ -16,8 +16,10 @@ services:
       - AWS_ACCESS_KEY_ID
       - AWS_SECRET_ACCESS_KEY
       - AWS_ENDPOINT_URL
-      - BUCKET_NAME=training-checkpoints
-      - BUCKET_PREFIX=loras/timber/
+      - CHECKPOINT_BUCKET_NAME=training-checkpoints
+      - CHECKPOINT_BUCKET_PREFIX=loras/timber/
+      - DATA_BUCKET_NAME=training-data
+      - DATA_BUCKET_PREFIX=timber/
       - PYTHONUNBUFFERED=1
     deploy:
       resources:

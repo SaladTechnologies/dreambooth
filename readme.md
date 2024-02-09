@@ -5,11 +5,11 @@
 | Variable Name                | Default Value                            | Description                                         |
 | ---------------------------- | ---------------------------------------- | --------------------------------------------------- |
 | LOG_LEVEL                    | INFO                                     | Log level for the application                       |
-| MODEL_NAME                   | stabilityai/stable-diffusion-xl-base-1.0 | Name of the model used                              |
-| INSTANCE_DIR                 | /images                                  | Directory for instances                             |
+| MODEL_NAME                   | stabilityai/stable-diffusion-xl-base-1.0 | Name of the base model used                         |
+| INSTANCE_DIR                 | /images                                  | Directory where training images are stored          |
 | OUTPUT_DIR                   | /output                                  | Directory for output files                          |
-| VAE_PATH                     | madebyollin/sdxl-vae-fp16-fix            | Path to the VAE model                               |
-| PROMPT                       | photo of timberdog                       | Prompt for the application                          |
+| VAE_PATH                     | madebyollin/sdxl-vae-fp16-fix            | name of the VAE model                               |
+| PROMPT                       | photo of timberdog                       | Prompt describing the concept being trained         |
 | CHECKPOINT_BUCKET_NAME       | None                                     | Name of the bucket for checkpoints (if applicable)  |
 | CHECKPOINT_BUCKET_PREFIX     | None                                     | Prefix for the checkpoint bucket (if applicable)    |
 | DATA_BUCKET_NAME             | None                                     | Name of the bucket for data storage (if applicable) |

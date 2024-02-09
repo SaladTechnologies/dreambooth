@@ -194,7 +194,7 @@ def train():
         f"--max_train_steps={max_train_steps}",
         f"--checkpointing_steps={checkpointing_steps}",
         "--resume_from_checkpoint=latest",
-        "--checkpoints_total_limit=1"
+        "--checkpoints_total_limit=1",
     ]
 
     logging.info(f"Training command: {' '.join(command_array)}")

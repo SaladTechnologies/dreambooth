@@ -10,7 +10,7 @@ from train_dreambooth_lora_sdxl import import_model_class_from_model_name_or_pat
 model_name = os.getenv(
     "MODEL_NAME", "stabilityai/stable-diffusion-xl-base-1.0")
 vae_path = os.getenv("VAE_PATH", "madebyollin/sdxl-vae-fp16-fix")
-variant = "fp16"
+variant = None
 
 # Load the tokenizers
 tokenizer_one = AutoTokenizer.from_pretrained(
@@ -52,7 +52,7 @@ vae = AutoencoderKL.from_pretrained(
     vae_path,
     subfolder="vae" if vae_path is None else None,
     revision=None,
-    variant=None,
+    variant=variant,
 )
 unet = UNet2DConditionModel.from_pretrained(
     model_name, subfolder="unet", revision=None, variant=variant

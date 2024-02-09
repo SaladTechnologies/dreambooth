@@ -1,13 +1,13 @@
 version: '3'
 
 services:
-  autotrain:
+  dreambooth:
     image: saladtechnologies/dreambooth:base
     build:
       context: .
       dockerfile: Dockerfile
     volumes:
-      - ./images:/images
+      # - ./images:/images
       - ./output:/output
       - ./models:/models
     environment:

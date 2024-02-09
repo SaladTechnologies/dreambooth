@@ -30,6 +30,7 @@ RUN pip install -e .
 
 WORKDIR /app/diffusers/examples/dreambooth
 RUN pip install -r requirements_sdxl.txt
+RUN pip install -r requirements.txt
 RUN accelerate config default
 
 COPY train.py .

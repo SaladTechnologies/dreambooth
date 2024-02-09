@@ -1,0 +1,9 @@
+FROM saladtechnologies/dreambooth:base
+
+ENV MODEL_NAME "stabilityai/stable-diffusion-xl-base-1.0"
+ENV VAE_PATH "madebyollin/sdxl-vae-fp16-fix"
+ENV DREAMBOOTH_SCRIPT "train_dreambooth_lora_sdxl.py"
+ENV RESOLUTION "1024"
+
+COPY download_sdxl.py .
+RUN python download_sdxl.py

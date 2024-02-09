@@ -27,5 +27,3 @@
 | WEBHOOK_AUTH_VALUE           | None                                     | Authorization value for webhooks                    |
 | PROGRESS_WEBHOOK_AUTH_VALUE  | Value of 'WEBHOOK_AUTH_VALUE'            | Authorization value for progress webhooks           |
 | COMPLETE_WEBHOOK_AUTH_VALUE  | Value of 'WEBHOOK_AUTH_VALUE'            | Authorization value for complete webhooks           |
-| SALAD_MACHINE_ID             | None                                     | ID for the salad machine                            |
-| SALAD_CONTAINER_GROUP_ID     | None                                     | ID for the salad container group                    |

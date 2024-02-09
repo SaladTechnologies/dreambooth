@@ -2,16 +2,15 @@ version: '3'
 
 services:
   dreambooth:
-    image: saladtechnologies/dreambooth:base
-    build:
-      context: .
-      dockerfile: Dockerfile
-    volumes:
-      # - ./images:/images
-      - ./output:/output
-      - ./models:/models
+    image: saladtechnologies/dreambooth:sdxl
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              capabilities: [ gpu ]
+              count: all
     environment:
-      - HF_HOME=/models
       - AWS_DEFAULT_REGION
       - AWS_ACCESS_KEY_ID
       - AWS_SECRET_ACCESS_KEY
@@ -21,11 +20,13 @@ services:
       - DATA_BUCKET_NAME=training-data
       - DATA_BUCKET_PREFIX=timber/
       - PYTHONUNBUFFERED=1
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              capabilities: [ gpu ]
-              count: all
+    build:
+      context: .
+      dockerfile: Dockerfile.sdxl
+    # command: nvidia-smi
+    # volumes:
+      # - ./images:/images
+      # - ./output:/output
+      # - ./models:/models
+    
           

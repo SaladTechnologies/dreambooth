@@ -33,5 +33,7 @@ RUN pip install -r requirements_sdxl.txt
 RUN pip install -r requirements.txt
 RUN accelerate config default
 
+ENV HF_HOME /models
+
 COPY train.py .
 CMD ["python", "train.py"]

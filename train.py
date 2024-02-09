@@ -18,15 +18,34 @@ logging.basicConfig(level=log_level, format=log_format,
 model_name = os.getenv(
     "MODEL_NAME", "stabilityai/stable-diffusion-xl-base-1.0")
 instance_dir = os.getenv("INSTANCE_DIR", "/images")
-output_dir = os.getenv("OUTPUT_DIR", "/output/timber")
+output_dir = os.getenv("OUTPUT_DIR", "/output")
 vae_path = os.getenv("VAE_PATH", "madebyollin/sdxl-vae-fp16-fix")
-prompt = os.getenv("PROMPT", "timber boy")
+prompt = os.getenv("PROMPT", "photo of timberdog")
 
 checkpoint_bucket_name = os.getenv('CHECKPOINT_BUCKET_NAME', None)
 checkpoint_bucket_prefix = os.getenv('CHECKPOINT_BUCKET_PREFIX', None)
 
 data_bucket_name = os.getenv('DATA_BUCKET_NAME', None)
 data_bucket_prefix = os.getenv('DATA_BUCKET_PREFIX', None)
+
+webhook_url = os.getenv("WEBHOOK_URL", None)
+progress_webhook_url = os.getenv("PROGRESS_WEBHOOK_URL", webhook_url)
+complete_webhook_url = os.getenv("COMPLETE_WEBHOOK_URL", webhook_url)
+
+webhook_auth_header = os.getenv("WEBHOOK_AUTH_HEADER", None)
+progress_webhook_auth_header = os.getenv(
+    "PROGRESS_WEBHOOK_AUTH_HEADER", webhook_auth_header)
+complete_webhook_auth_header = os.getenv(
+    "COMPLETE_WEBHOOK_AUTH_HEADER", webhook_auth_header)
+
+webhook_auth_value = os.getenv("WEBHOOK_AUTH_VALUE", None)
+progress_webhook_auth_value = os.getenv(
+    "PROGRESS_WEBHOOK_AUTH_VALUE", webhook_auth_value)
+complete_webhook_auth_value = os.getenv(
+    "COMPLETE_WEBHOOK_AUTH_VALUE", webhook_auth_value)
+
+salad_machine_id = os.getenv("SALAD_MACHINE_ID", None)
+salad_container_group_id = os.getenv("SALAD_CONTAINER_GROUP_ID", None)
 
 s3 = boto3.client('s3')
 
@@ -60,9 +79,6 @@ def download_data():
 
 
 def unzip_to_parent_folder(zip_file):
-    # Get the name of the zip file without extension
-    zip_file_name = os.path.splitext(zip_file)[0]
-
     # Construct the unzip command
     unzip_command = ['unzip', '-o', zip_file, '-d', os.path.dirname(zip_file)]
 
@@ -237,6 +253,8 @@ def zip_and_upload_checkpoint(checkpoint_dir):
         # Upload the zip file to S3
         s3.upload_file(f"{output_dir}/{zip_file_name}", checkpoint_bucket_name,
                        f"{checkpoint_bucket_prefix}{zip_file_name}")
+        send_progress_webhook(checkpoint_bucket_name,
+                              f"{checkpoint_bucket_prefix}{zip_file_name}")
 
         # Remove the zip file
         os.remove(f"{output_dir}/{zip_file_name}")
@@ -252,11 +270,42 @@ def upload_final_lora():
         # the file is $output_dir/pytorch_lora_weights.safetensors
         s3.upload_file(f"{output_dir}/pytorch_lora_weights.safetensors",
                        checkpoint_bucket_name, f"{checkpoint_bucket_prefix}pytorch_lora_weights.safetensors")
+        send_complete_webhook(checkpoint_bucket_name,
+                              f"{checkpoint_bucket_prefix}pytorch_lora_weights.safetensors")
 
     except Exception as e:
         logging.exception(f"Error: {e}")
         logging.error()
         sys.exit(1)
+
+
+def send_webhook(url, auth_header, auth_value, bucket_name, key):
+    try:
+        if progress_webhook_url is None:
+            return
+
+        response = requests.post(url, json={
+            "bucket_name": bucket_name,
+            "key": key,
+            "machine_id": salad_machine_id,
+            "container_group_id": salad_container_group_id
+        }, headers={
+            auth_header: auth_value
+        })
+        response.raise_for_status()
+        logging.info("Progress webhook sent successfully.")
+    except Exception as e:
+        logging.error(f"Error: {e}")
+
+
+def send_progress_webhook(bucket_name, key):
+    send_webhook(progress_webhook_url, progress_webhook_auth_header,
+                 progress_webhook_auth_value, bucket_name, key)
+
+
+def send_complete_webhook(bucket_name, key):
+    send_webhook(complete_webhook_url, complete_webhook_auth_header,
+                 complete_webhook_auth_value, bucket_name, key)
 
 
 if __name__ == "__main__":

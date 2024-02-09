@@ -10,6 +10,10 @@
 | OUTPUT_DIR                   | /output                                  | Directory for output files                          |
 | VAE_PATH                     | madebyollin/sdxl-vae-fp16-fix            | name of the VAE model                               |
 | PROMPT                       | photo of timberdog                       | Prompt describing the concept being trained         |
+| DREAMBOOTH_SCRIPT            | train_dreambooth_lora_sdxl.py            | Dreambooth training script path                     |
+| RESOLUTION                   | 1024                                     | Resolution of the images                            |
+| MAX_TRAIN_STEPS              | 500                                      | Total number of training steps                      |
+| CHECKPOINTING_STEPS          | 50                                       | Save a checkpoint after every N steps               |
 | CHECKPOINT_BUCKET_NAME       | None                                     | Name of the bucket for checkpoints (if applicable)  |
 | CHECKPOINT_BUCKET_PREFIX     | None                                     | Prefix for the checkpoint bucket (if applicable)    |
 | DATA_BUCKET_NAME             | None                                     | Name of the bucket for data storage (if applicable) |

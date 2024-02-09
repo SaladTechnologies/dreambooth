@@ -15,19 +15,42 @@ log_format = "%(asctime)s - %(levelname)s - %(name)s - %(message)s"
 logging.basicConfig(level=log_level, format=log_format,
                     datefmt="%m/%d/%Y %H:%M:%S")
 
+# Huggingface Hub Model Name or Path
 model_name = os.getenv(
     "MODEL_NAME", "stabilityai/stable-diffusion-xl-base-1.0")
+
+# Directory where training data is stored
 instance_dir = os.getenv("INSTANCE_DIR", "/images")
+
+# Directory where training output is stored
 output_dir = os.getenv("OUTPUT_DIR", "/output")
+
+# VAE model name or path
 vae_path = os.getenv("VAE_PATH", "madebyollin/sdxl-vae-fp16-fix")
 prompt = os.getenv("PROMPT", "photo of timberdog")
 
+# Dreambooth training script from diffusers/examples/dreambooth
+dreambooth_script = os.getenv(
+    "DREAMBOOTH_SCRIPT", "train_dreambooth_lora_sdxl.py")
+
+# Resolution of the images
+resolution = os.getenv("RESOLUTION", "1024")
+
+# Total number of training steps
+max_train_steps = os.getenv("MAX_TRAIN_STEPS", "500")
+
+# Save a checkpoint after every N steps
+checkpointing_steps = os.getenv("CHECKPOINTING_STEPS", "50")
+
+# S3 bucket and prefix for storing checkpoints
 checkpoint_bucket_name = os.getenv('CHECKPOINT_BUCKET_NAME', None)
 checkpoint_bucket_prefix = os.getenv('CHECKPOINT_BUCKET_PREFIX', None)
 
+# S3 bucket and prefix for storing training data
 data_bucket_name = os.getenv('DATA_BUCKET_NAME', None)
 data_bucket_prefix = os.getenv('DATA_BUCKET_PREFIX', None)
 
+# Webhook URLs and authentication headers
 webhook_url = os.getenv("WEBHOOK_URL", None)
 progress_webhook_url = os.getenv("PROGRESS_WEBHOOK_URL", webhook_url)
 complete_webhook_url = os.getenv("COMPLETE_WEBHOOK_URL", webhook_url)
@@ -44,6 +67,7 @@ progress_webhook_auth_value = os.getenv(
 complete_webhook_auth_value = os.getenv(
     "COMPLETE_WEBHOOK_AUTH_VALUE", webhook_auth_value)
 
+# Salad Machine and Container Group IDs
 salad_machine_id = os.getenv("SALAD_MACHINE_ID", None)
 salad_container_group_id = os.getenv("SALAD_CONTAINER_GROUP_ID", None)
 
@@ -154,21 +178,21 @@ def load_existing_progress():
 
 def train():
     command_array = [
-        "accelerate", "launch", "train_dreambooth_lora_sdxl.py",
+        "accelerate", "launch", dreambooth_script,
         f"--pretrained_model_name_or_path={model_name}",
         f"--instance_data_dir={instance_dir}",
         f"--pretrained_vae_model_name_or_path={vae_path}",
         f"--output_dir={output_dir}",
         f"--instance_prompt=\"{prompt}\"",
         "--mixed_precision=fp16",
-        "--resolution=1024",
+        f"--resolution={resolution}",
         "--train_batch_size=1",
         "--gradient_accumulation_steps=4",
         "--learning_rate=1e-4",
         "--lr_scheduler=constant",
         "--lr_warmup_steps=0",
-        "--max_train_steps=500",
-        "--checkpointing_steps=50",
+        f"--max_train_steps={max_train_steps}",
+        f"--checkpointing_steps={checkpointing_steps}",
         "--resume_from_checkpoint=latest",
         "--checkpoints_total_limit=1"
     ]

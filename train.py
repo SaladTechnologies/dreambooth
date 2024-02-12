@@ -70,6 +70,7 @@ complete_webhook_auth_value = os.getenv(
 # Salad Machine and Container Group IDs
 salad_machine_id = os.getenv("SALAD_MACHINE_ID", None)
 salad_container_group_id = os.getenv("SALAD_CONTAINER_GROUP_ID", None)
+salad_container_group_name = os.getenv("SALAD_CONTAINER_GROUP_NAME", None)
 salad_organization_name = os.getenv("SALAD_ORGANIZATION_NAME", None)
 salad_project_name = os.getenv("SALAD_PROJECT_NAME", None)
 
@@ -307,7 +308,7 @@ def upload_final_lora():
 
 def send_webhook(url, auth_header, auth_value, bucket_name, key):
     try:
-        if progress_webhook_url is None:
+        if url is None:
             return
 
         response = requests.post(url, json={
@@ -316,7 +317,8 @@ def send_webhook(url, auth_header, auth_value, bucket_name, key):
             "machine_id": salad_machine_id,
             "container_group_id": salad_container_group_id,
             "organization_name": salad_organization_name,
-            "project_name": salad_project_name
+            "project_name": salad_project_name,
+            "container_group_name": salad_container_group_name
         }, headers={
             auth_header: auth_value
         })

@@ -70,6 +70,8 @@ complete_webhook_auth_value = os.getenv(
 # Salad Machine and Container Group IDs
 salad_machine_id = os.getenv("SALAD_MACHINE_ID", None)
 salad_container_group_id = os.getenv("SALAD_CONTAINER_GROUP_ID", None)
+salad_organization_name = os.getenv("SALAD_ORGANIZATION_NAME", None)
+salad_project_name = os.getenv("SALAD_PROJECT_NAME", None)
 
 s3 = boto3.client('s3')
 
@@ -312,7 +314,9 @@ def send_webhook(url, auth_header, auth_value, bucket_name, key):
             "bucket_name": bucket_name,
             "key": key,
             "machine_id": salad_machine_id,
-            "container_group_id": salad_container_group_id
+            "container_group_id": salad_container_group_id,
+            "organization_name": salad_organization_name,
+            "project_name": salad_project_name
         }, headers={
             auth_header: auth_value
         })

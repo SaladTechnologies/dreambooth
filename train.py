@@ -42,6 +42,43 @@ max_train_steps = os.getenv("MAX_TRAIN_STEPS", "500")
 # Save a checkpoint after every N steps
 checkpointing_steps = os.getenv("CHECKPOINTING_STEPS", "50")
 
+# Learning rate
+learning_rate = os.getenv("LEARNING_RATE", "1e-4")
+
+# Gradient accumulation steps
+gradient_accumulation_steps = os.getenv("GRADIENT_ACCUMULATION_STEPS", "4")
+
+# LR warmup steps
+lr_warmup_steps = os.getenv("LR_WARMUP_STEPS", "0")
+
+# Mixed precision training
+mixed_precision = os.getenv("MIXED_PRECISION", "fp16")
+
+# Train batch size
+train_batch_size = os.getenv("TRAIN_BATCH_SIZE", "1")
+
+# lr scheduler
+lr_scheduler = os.getenv("LR_SCHEDULER", "constant")
+
+# Use 8bit adam
+use_8bit_adam = os.getenv("USE_8BIT_ADAM", None)
+use_8bit_adam = True if use_8bit_adam.lower() == "true" else False
+
+# Train text encoder
+train_text_encoder = os.getenv("TRAIN_TEXT_ENCODER", None)
+train_text_encoder = True if train_text_encoder.lower() == "true" else False
+
+# Gradient Checkpointing
+gradient_checkpointing = os.getenv("GRADIENT_CHECKPOINTING", None)
+gradient_checkpointing = True if gradient_checkpointing.lower() == "true" else False
+
+# With prior preservation
+with_prior_preservation = os.getenv("WITH_PRIOR_PRESERVATION", None)
+with_prior_preservation = True if with_prior_preservation.lower() == "true" else False
+
+# prior loss weight
+prior_loss_weight = os.getenv("PRIOR_LOSS_WEIGHT", "1.0")
+
 # S3 bucket and prefix for storing checkpoints
 checkpoint_bucket_name = os.getenv('CHECKPOINT_BUCKET_NAME', None)
 checkpoint_bucket_prefix = os.getenv('CHECKPOINT_BUCKET_PREFIX', None)
@@ -187,18 +224,31 @@ def train():
         f"--pretrained_vae_model_name_or_path={vae_path}",
         f"--output_dir={output_dir}",
         f"--instance_prompt=\"{prompt}\"",
-        "--mixed_precision=fp16",
+        f"--mixed_precision={mixed_precision}",
         f"--resolution={resolution}",
-        "--train_batch_size=1",
-        "--gradient_accumulation_steps=4",
-        "--learning_rate=1e-4",
-        "--lr_scheduler=constant",
-        "--lr_warmup_steps=0",
+        f"--train_batch_size={train_batch_size}",
+        f"--gradient_accumulation_steps={gradient_accumulation_steps}",
+        f"--learning_rate={learning_rate}",
+        f"--lr_scheduler={lr_scheduler}",
+        f"--lr_warmup_steps={lr_warmup_steps}",
         f"--max_train_steps={max_train_steps}",
         f"--checkpointing_steps={checkpointing_steps}",
         "--resume_from_checkpoint=latest",
         "--checkpoints_total_limit=1",
     ]
+
+    if use_8bit_adam:
+        command_array.append("--use_8bit_adam")
+
+    if train_text_encoder:
+        command_array.append("--train_text_encoder")
+
+    if gradient_checkpointing:
+        command_array.append("--gradient_checkpointing")
+
+    if with_prior_preservation:
+        command_array.append("--with_prior_preservation")
+        command_array.append(f"--prior_loss_weight={prior_loss_weight}")
 
     logging.info(f"Training command: {' '.join(command_array)}")
 

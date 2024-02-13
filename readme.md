@@ -43,3 +43,5 @@
 | SALAD_CONTAINER_GROUP_NAME   | None                                     | Container Group name for Salad            |
 | SALAD_ORGANIZATION_NAME      | None                                     | Organization name for Salad               |
 | SALAD_PROJECT_NAME           | None                                     | Project name for Salad                    |
+
+Additonally, if using s3-compatible storage for checkpointing, you will need to provide AWS configuration environment variables as well.

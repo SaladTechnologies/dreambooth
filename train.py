@@ -27,7 +27,11 @@ output_dir = os.getenv("OUTPUT_DIR", "/output")
 
 # VAE model name or path
 vae_path = os.getenv("VAE_PATH", "madebyollin/sdxl-vae-fp16-fix")
+
 prompt = os.getenv("PROMPT", "photo of timberdog")
+validation_prompt = os.getenv(
+    "VALIDATION_PROMPT", f"{prompt} playing in the snow")
+validation_epochs = int(os.getenv("VALIDATION_EPOCHS", "0"))
 
 # Dreambooth training script from diffusers/examples/dreambooth
 dreambooth_script = os.getenv(
@@ -61,19 +65,19 @@ train_batch_size = os.getenv("TRAIN_BATCH_SIZE", "1")
 lr_scheduler = os.getenv("LR_SCHEDULER", "constant")
 
 # Use 8bit adam
-use_8bit_adam = os.getenv("USE_8BIT_ADAM", None)
+use_8bit_adam = os.getenv("USE_8BIT_ADAM", "")
 use_8bit_adam = True if use_8bit_adam.lower() == "true" else False
 
 # Train text encoder
-train_text_encoder = os.getenv("TRAIN_TEXT_ENCODER", None)
+train_text_encoder = os.getenv("TRAIN_TEXT_ENCODER", "")
 train_text_encoder = True if train_text_encoder.lower() == "true" else False
 
 # Gradient Checkpointing
-gradient_checkpointing = os.getenv("GRADIENT_CHECKPOINTING", None)
+gradient_checkpointing = os.getenv("GRADIENT_CHECKPOINTING", "")
 gradient_checkpointing = True if gradient_checkpointing.lower() == "true" else False
 
 # With prior preservation
-with_prior_preservation = os.getenv("WITH_PRIOR_PRESERVATION", None)
+with_prior_preservation = os.getenv("WITH_PRIOR_PRESERVATION", "")
 with_prior_preservation = True if with_prior_preservation.lower() == "true" else False
 
 # prior loss weight
@@ -249,6 +253,10 @@ def train():
     if with_prior_preservation:
         command_array.append("--with_prior_preservation")
         command_array.append(f"--prior_loss_weight={prior_loss_weight}")
+
+    if validation_epochs > 0:
+        command_array.append(f"--validation_prompt=\"{validation_prompt}\"")
+        command_array.append(f"--validation_epochs={validation_epochs}")
 
     logging.info(f"Training command: {' '.join(command_array)}")
 

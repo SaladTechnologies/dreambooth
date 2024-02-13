@@ -2,7 +2,7 @@ version: '3'
 
 services:
   dreambooth:
-    image: saladtechnologies/dreambooth:sdxl
+    image: saladtechnologies/dreambooth:base
     deploy:
       resources:
         reservations:
@@ -16,17 +16,21 @@ services:
       - AWS_SECRET_ACCESS_KEY
       - AWS_ENDPOINT_URL
       - CHECKPOINT_BUCKET_NAME=training-checkpoints
-      - CHECKPOINT_BUCKET_PREFIX=loras/timber/
+      - CHECKPOINT_BUCKET_PREFIX=loras/timber2/
       - DATA_BUCKET_NAME=training-data
       - DATA_BUCKET_PREFIX=timber/
+      - TRAIN_TEXT_ENCODER=true
+      - PROMPT=a photo of timberdog
+      - VALIDATION_EPOCHS=50
+      - USE_8BIT_ADAM=true
       - PYTHONUNBUFFERED=1
     build:
       context: .
-      dockerfile: Dockerfile.sdxl
+      dockerfile: Dockerfile
     # command: nvidia-smi
-    # volumes:
-      # - ./images:/images
-      # - ./output:/output
-      # - ./models:/models
+    volumes:
+      - ./images:/images
+      - ./output:/output
+      - ./models:/models
     
           

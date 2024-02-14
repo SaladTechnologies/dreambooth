@@ -2,7 +2,7 @@ version: '3'
 
 services:
   dreambooth:
-    image: saladtechnologies/dreambooth:base
+    image: saladtechnologies/dreambooth:sdxl
     deploy:
       resources:
         reservations:
@@ -11,26 +11,36 @@ services:
               capabilities: [ gpu ]
               count: all
     environment:
+      - PROMPT=a photo of timberdog
+      - VALIDATION_PROMPT=a photo of timberdog playing in the snow
+      - VALIDATION_EPOCHS=10
+      # - TRAIN_TEXT_ENCODER=true
+      # - USE_8BIT_ADAM=true
+      - LEARNING_RATE=2e-6
+      - TRAIN_BATCH_SIZE=2
+      - MAX_TRAIN_STEPS=800
+      - CHECKPOINTING_STEPS=20
+      
+      - CHECKPOINT_BUCKET_NAME=training-checkpoints
+      - CHECKPOINT_BUCKET_PREFIX=loras/timber/
+      - DATA_BUCKET_NAME=training-data
+      - DATA_BUCKET_PREFIX=timber/
       - AWS_DEFAULT_REGION
       - AWS_ACCESS_KEY_ID
       - AWS_SECRET_ACCESS_KEY
       - AWS_ENDPOINT_URL
-      - CHECKPOINT_BUCKET_NAME=training-checkpoints
-      - CHECKPOINT_BUCKET_PREFIX=loras/timber2/
-      - DATA_BUCKET_NAME=training-data
-      - DATA_BUCKET_PREFIX=timber/
-      - TRAIN_TEXT_ENCODER=true
-      - PROMPT=a photo of timberdog
-      - VALIDATION_EPOCHS=50
-      - USE_8BIT_ADAM=true
+
+      - REPORT_TO=wandb
+      - WANDB_API_KEY
+
       - PYTHONUNBUFFERED=1
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.sdxl
     # command: nvidia-smi
-    volumes:
-      - ./images:/images
-      - ./output:/output
-      - ./models:/models
+    # volumes:
+    #   - ./images:/images
+    #   - ./output:/output
+    #   - ./models:/models
     
           

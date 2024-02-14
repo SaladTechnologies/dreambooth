@@ -83,6 +83,9 @@ with_prior_preservation = True if with_prior_preservation.lower() == "true" else
 # prior loss weight
 prior_loss_weight = os.getenv("PRIOR_LOSS_WEIGHT", "1.0")
 
+# Report to
+report_to = os.getenv("REPORT_TO", "tensorboard")
+
 # S3 bucket and prefix for storing checkpoints
 checkpoint_bucket_name = os.getenv('CHECKPOINT_BUCKET_NAME', None)
 checkpoint_bucket_prefix = os.getenv('CHECKPOINT_BUCKET_PREFIX', None)
@@ -239,6 +242,7 @@ def train():
         f"--checkpointing_steps={checkpointing_steps}",
         "--resume_from_checkpoint=latest",
         "--checkpoints_total_limit=1",
+        f"--report_to={report_to}"
     ]
 
     if use_8bit_adam:

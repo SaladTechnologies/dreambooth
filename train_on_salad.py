@@ -170,7 +170,7 @@ if report_to == "wandb":
     payload["container"]["environment_variables"]['REPORT_TO'] = "wandb"
     payload["container"]["environment_variables"]['WANDB_API_KEY'] = wandb_api_key
 
-if report_to is not None:
+if report_to is not None and validation_prompt is not None:
     payload["container"]["environment_variables"]["VALIDATION_PROMPT"] = validation_prompt
     payload["container"]["environment_variables"]["VALIDATION_EPOCHS"] = str(
         validation_epochs)

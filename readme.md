@@ -1,5 +1,9 @@
 # Dreambooth LoRA Training
 
+## Train on Salad
+
+In this repo, there's a script `train_on_salad.py`. You can customize this script to easily run SDXL dreambooth LoRA training jobs on Salad.
+
 ## Environment Variables
 
 | Variable Name                | Default Value                            | Description                               |

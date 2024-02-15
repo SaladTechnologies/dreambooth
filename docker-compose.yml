@@ -12,17 +12,26 @@ services:
               count: all
     environment:
       - PROMPT=a photo of timberdog
+      - LEARNING_RATE=2e-6
+      - MAX_TRAIN_STEPS=500
+      - TRAIN_BATCH_SIZE=1
+      - USE_8BIT_ADAM=false
+      - MIXED_PRECISION=fp16
+      - RESOLUTION=1024
+      - GRADIENT_ACCUMULATION_STEPS=4
+      - LR_SCHEDULER=constant
+      - LR_WARMUM_STEPS=0
+      - TRAIN_TEXT_ENCODER=false
+      - GRADIENT_CHECKPOINTING=false
+      - MODEL_NAME=stabilityai/stable-diffusion-xl-base-1.0
+      - VAE_PATH=madebyollin/sdxl-vae-fp16-fix
+      - TRAINING_SCRIPT=train_dreambooth_lora_sdxl.py
+      - CHECKPOINTING_STEPS=20
       - VALIDATION_PROMPT=a photo of timberdog playing in the snow
       - VALIDATION_EPOCHS=10
-      # - TRAIN_TEXT_ENCODER=true
-      # - USE_8BIT_ADAM=true
-      - LEARNING_RATE=2e-6
-      - TRAIN_BATCH_SIZE=2
-      - MAX_TRAIN_STEPS=800
-      - CHECKPOINTING_STEPS=20
       
       - CHECKPOINT_BUCKET_NAME=training-checkpoints
-      - CHECKPOINT_BUCKET_PREFIX=loras/timber/
+      - CHECKPOINT_BUCKET_PREFIX=loras/timber4/
       - DATA_BUCKET_NAME=training-data
       - DATA_BUCKET_PREFIX=timber/
       - AWS_DEFAULT_REGION

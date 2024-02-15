@@ -54,7 +54,7 @@ project_name = "lora-training"
 
 # Replace with your container group name. Remember to increment the
 # number for each new container group
-container_group_name = "sdxl-timber-lora-7"
+container_group_name = "sdxl-timber-lora-8"
 
 # Replace with the number of vCPUs and amount of memory you want to allocate
 num_vcpu = 4  # $0.004/hr/vcpu
@@ -85,7 +85,7 @@ checkpoint_bucket_name = "training-checkpoints"
 
 # This prefix will be prepended to the file name when files are uploaded.
 # e.g. "loras/timber/pytorch_model_weights.safetensors"
-checkpoint_bucket_prefix = "loras/timber/"
+checkpoint_bucket_prefix = "loras/timber5/"
 
 # Replace with your S3 bucket name. This is where the training data
 # will be downloaded from
@@ -177,6 +177,10 @@ if report_to is not None and validation_prompt is not None:
 
 if aws_access_key_id is not None:
     payload["container"]["environment_variables"]["AWS_ACCESS_KEY_ID"] = aws_access_key_id
+    payload["container"]["environment_variables"]["CHECKPOINT_BUCKET_NAME"] = checkpoint_bucket_name
+    payload["container"]["environment_variables"]["CHECKPOINT_BUCKET_PREFIX"] = checkpoint_bucket_prefix
+    payload["container"]["environment_variables"]["DATA_BUCKET_NAME"] = data_bucket_name
+    payload["container"]["environment_variables"]["DATA_BUCKET_PREFIX"] = data_bucket_prefix
 
 if aws_secret_access_key is not None:
     payload["container"]["environment_variables"]["AWS_SECRET_ACCESS_KEY"] = aws_secret_access_key
@@ -205,3 +209,8 @@ response = requests.post(
 print(response.status_code, response.reason)
 if not response.ok:
     print(response.json())
+else:
+    print(
+        f"Container group {container_group_name} created successfully! View in Portal:")
+    print(
+        f"https://portal.salad.com/organizations/{organization_name}/projects/{project_name}/containers/{container_group_name}")

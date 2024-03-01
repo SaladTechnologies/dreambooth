@@ -23,7 +23,7 @@ WORKDIR /app
 
 COPY requirements.txt .
 RUN pip install -r requirements.txt
-RUN git clone -b v0.26.1 https://github.com/huggingface/diffusers.git
+RUN git clone -b main https://github.com/huggingface/diffusers.git
 
 WORKDIR /app/diffusers
 RUN pip install -e .

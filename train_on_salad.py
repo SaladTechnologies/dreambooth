@@ -1,22 +1,38 @@
+#!/usr/bin/env python3
+
 import os
 import requests
 
 
+#################################################
+# These Values Usually Change Every Single Run  #
+#################################################
+# Replace with your container group name. Remember to increment the
+# number for each new container group
+container_group_name = "sdxl-timber-lora-12"
+
+# This prefix will be prepended to the file name when files are uploaded.
+# e.g. "loras/timber/pytorch_model_weights.safetensors"
+checkpoint_bucket_prefix = "loras/timberdog1/"
+
 ############################################
 # Configuration for the training script    #
+# You'll want to play around with these    #
+# values to see what works best for your   #
+# specific use case.                       #
 ############################################
 prompt = "a photo of timberdog"
-max_training_steps = 500
-train_batch_size = 1
-learning_rate = "2e-6"
+max_training_steps = 4000
+train_batch_size = 2
+learning_rate = "1e-6"
 use_8bit_adam = False
 mixed_precision = "fp16"
 resolution = 1024
-gradiant_accumulation_steps = 4
+gradient_accumulation_steps = 4
 lr_scheduler = "constant"
 lr_warmup_steps = 0
-train_text_encoder = False
-gradiant_checkpointing = False
+train_text_encoder = True
+gradient_checkpointing = False
 with_prior_preservation = False
 prior_loss_weight = 1.0
 
@@ -30,11 +46,11 @@ vae_path = "madebyollin/sdxl-vae-fp16-fix"
 # You can automatically log your training runs to Weights & Biases
 report_to = "wandb"
 wandb_api_key = os.getenv('WANDB_API_KEY', None)
-validation_prompt = "a photo of timberdog playing in the snow"
-validation_epochs = 10  # Run validation every `validation_epochs` epochs
+validation_prompt = "a photo of timberdog playing in the snow, pixar style"
+validation_epochs = 50  # Run validation every `validation_epochs` epochs
 
 # Checkpoints are saved every `checkpointing_steps` steps
-checkpointing_steps = 20
+checkpointing_steps = 100
 
 
 ############################################
@@ -51,10 +67,6 @@ organization_name = "salad-benchmarking"
 
 # Replace with your project name
 project_name = "lora-training"
-
-# Replace with your container group name. Remember to increment the
-# number for each new container group
-container_group_name = "sdxl-timber-lora-8"
 
 # Replace with the number of vCPUs and amount of memory you want to allocate
 num_vcpu = 4  # $0.004/hr/vcpu
@@ -83,9 +95,6 @@ aws_endpoint_url = os.getenv('AWS_ENDPOINT_URL', None)
 # will be saved, and where the trained model will be uploaded
 checkpoint_bucket_name = "training-checkpoints"
 
-# This prefix will be prepended to the file name when files are uploaded.
-# e.g. "loras/timber/pytorch_model_weights.safetensors"
-checkpoint_bucket_prefix = "loras/timber5/"
 
 # Replace with your S3 bucket name. This is where the training data
 # will be downloaded from
@@ -143,11 +152,11 @@ payload = {
             "USE_8BIT_ADAM": str(use_8bit_adam).lower(),
             "MIXED_PRECISION": mixed_precision,
             "RESOLUTION": str(resolution),
-            "GRADIENT_ACCUMULATION_STEPS": str(gradiant_accumulation_steps),
+            "GRADIENT_ACCUMULATION_STEPS": str(gradient_accumulation_steps),
             "LR_SCHEDULER": lr_scheduler,
             "LR_WARMUP_STEPS": str(lr_warmup_steps),
             "TRAIN_TEXT_ENCODER": str(train_text_encoder).lower(),
-            "GRADIENT_CHECKPOINTING": str(gradiant_checkpointing).lower(),
+            "GRADIENT_CHECKPOINTING": str(gradient_checkpointing).lower(),
             "MODEL_NAME": model_name,
             "VAE_PATH": vae_path,
             "TRAINING_SCRIPT": training_script,

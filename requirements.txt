@@ -1,9 +1,7 @@
-git+https://github.com/huggingface/transformers.git@v4.38.2
-git+https://github.com/huggingface/accelerate.git@v0.27.0
+git+https://github.com/huggingface/transformers.git@v4.40.1
+git+https://github.com/huggingface/accelerate.git@v0.29.3
 xformers
 bitsandbytes
 hf_transfer
-boto3
-watchdog
 requests
 wandb

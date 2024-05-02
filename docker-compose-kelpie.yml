@@ -1,0 +1,37 @@
+version: '3'
+
+services:
+  dreambooth:
+    image: saladtechnologies/dreambooth:sd1.5-kelpie
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              capabilities: [ gpu ]
+              count: all
+    build:
+      context: .
+      dockerfile: Dockerfile.sd15-kelpie
+    environment:
+      - INPUT_DIR=/input
+      - OUTPUT_DIR=/output
+      - CHECKPOINT_DIR=/output
+      # These are the environment variables that Kelpie needs
+      - KELPIE_API_URL=https://kelpie.saladexamples.com
+      - KELPIE_API_KEY
+
+      # These are the environment variables that are needed
+      # to access s3-compatible storage
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
+      - AWS_DEFAULT_REGION
+
+      # If you're using R2 or Wasabi, you'll need to set
+      # the endpoint URL
+      - AWS_ENDPOINT_URL
+
+      # In production, these environment variables are set
+      # automatically by Salad's infrastructure.
+      - SALAD_CONTAINER_GROUP_ID=local-testing
+      - SALAD_MACHINE_ID=local-testing

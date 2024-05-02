@@ -1,0 +1,8 @@
+FROM saladtechnologies/dreambooth:base
+
+RUN python -c 'from huggingface_hub import snapshot_download; snapshot_download(repo_id="runwayml/stable-diffusion-v1-5", allow_patterns=["*.json", "*.fp16.safetensors"])'
+
+RUN wget https://github.com/SaladTechnologies/kelpie/releases/download/0.1.1/kelpie -O /kelpie && chmod +x /kelpie
+# COPY kelpie /kelpie
+
+CMD ["/kelpie"]
